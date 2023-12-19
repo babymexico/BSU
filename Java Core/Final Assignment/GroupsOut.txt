@@ -1,0 +1,48 @@
+Группа A:
+Atletico_M 13 4 0 1 14 3
+Juventus 11 3 0 2 7 4
+Olympiacos 9 2 0 3 6 11
+Malmo 7 1 0 4 2 11
+
+Группа B:
+Real_Madrid 18 6 0 0 16 2
+Basel 9 2 0 3 6 7
+Liverpool 8 1 1 3 4 8
+Ludogorets 9 1 1 4 5 14
+
+Группа C:
+Monaco 11 2 2 1 3 1
+Bayer_L 12 3 1 1 7 3
+Zenit 8 1 1 3 3 6
+Benfica 9 1 2 2 2 5
+
+Группа D:
+Borussia_D 11 3 1 0 10 1
+Arsenal 10 3 0 1 10 5
+Anderlecht 6 0 2 2 3 7
+Galatasaray 5 0 1 3 3 13
+
+Группа E:
+Bayern 12 4 0 0 12 1
+Manchester_City 8 1 2 1 5 4
+Roma 7 1 1 2 7 11
+CSKA_M 5 0 1 3 3 11
+
+Группа F:
+Barcelona 10 3 0 1 9 5
+PSG 9 2 1 1 6 6
+Ajax 8 1 2 1 7 5
+APOEL 5 0 1 3 1 7
+
+Группа G:
+Chelsea 11 3 1 0 11 2
+Schalke_04 10 2 2 0 7 5
+Sporting_L 5 0 1 3 5 9
+Maribor 6 0 2 2 2 9
+
+Группа H:
+Porto 10 2 2 0 11 4
+Shakhtar_Dn 9 1 3 0 10 3
+Athletic_B 7 1 1 2 4 4
+BATE 6 1 0 3 2 16
+
