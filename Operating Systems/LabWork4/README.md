@@ -1,0 +1,21 @@
+Laboratory Work 4 task description:
+Topic: "Process synchronization".
+Task. Write a program to exchange messages between processes through a shared file. The program includes one Receiver process and several Sender processes. Sender processes send messages to the Receiver process.
+Requirements for the implementation of the Receiver process. The Receiver process must perform the following actions:
+1. Enter the name of a binary file and the number of records in the binary file to be used for message transmission from the console.
+2. Create a binary file for messages. The maximum message length is 20 characters.
+3. Enter the number of Sender processes from the console.
+4. Start the specified number of Sender processes. Pass the filename for messages to each Sender process through the command line.
+5. Wait for a signal indicating readiness for work from all Sender processes.
+6. Perform cyclically the following actions based on console commands: read a message from the binary file or terminate its operation.
+Note: The Receiver process enters a waiting state when a command to read a message is issued from an empty binary file.
+
+Requirements for the implementation of the Sender process. The Sender process must perform the following actions:
+1. Open the file for message transmission. Get the file name from the command line.
+2. Send a signal to the Receiver process indicating readiness for work.
+3. Perform cyclically the following actions based on console commands: send a message to the Receiver process or terminate its operation.
+The message text is entered from the console. The length of the message is less than 20 characters.
+Note: The Sender process enters a waiting state if a command to write a message to a file filled with messages is called.
+
+Additional requirements: Message transmission through the binary file should be organized as a circular FIFO queue. That is, the Receiver process should read messages in the order they were sent by the Sender processes.
+Simplified laboratory task. Solve the given problem for one Receiver process and one Sender process. At any given time, only one message can be transmitted between the processes.
