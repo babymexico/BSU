@@ -1,155 +1,143 @@
 #include <iostream>
-#include <vector>
 #include <boost/thread.hpp>
-#include <boost/atomic.hpp>
 #include <boost/chrono.hpp>
+#include <boost/bind.hpp>
+#include <vector>
 
-class MarkerThread {
-public:
-    MarkerThread(int markerNumber, std::vector<int>& array, int arraySize, boost::mutex& arrayMutex, boost::condition_variable& cv, boost::atomic<bool>& startSignal, boost::atomic<bool>& continueSignal)
-        : markerNumber(markerNumber), array(array), arraySize(arraySize), arrayMutex(arrayMutex), cv(cv), startSignal(startSignal), continueSignal(continueSignal), isTerminated(false) {}
-
-    void start() {
-        thread = boost::thread(&MarkerThread::run, this);
-    }
-
-    void terminate() {
-        {
-            boost::unique_lock<boost::mutex> lock(arrayMutex);
-            isTerminated = true;
-        }
-        cv.notify_all();
-        thread.join();
-        std::cout << "Marker " << markerNumber << ": Thread terminated" << std::endl;
-    }
-
-private:
-    int markerNumber;
-    std::vector<int>& array;
-    int arraySize;
-    boost::thread thread;
-    boost::mutex& arrayMutex;
-    boost::condition_variable& cv;
-    boost::atomic<bool>& startSignal;
-    boost::atomic<bool>& continueSignal;
-    bool isTerminated;
-
-    void run() {
-        std::cout << "Marker " << markerNumber << ": Thread started" << std::endl;
-
-        srand(static_cast<unsigned int>(markerNumber));
-
-        {
-            boost::unique_lock<boost::mutex> lock(arrayMutex);
-            cv.wait(lock, [&] { return startSignal.load(); });
-        }
-
-        while (true) {
-            int randomNumber = rand();
-            int index = randomNumber % arraySize;
-
-            {
-                boost::unique_lock<boost::mutex> lock(arrayMutex);
-
-                if (array[index] == 0) {
-                    boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
-                    array[index] = markerNumber;
-                    boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
-
-                    std::cout << "Marker " << markerNumber << ": Marked element at index " << index << std::endl;
-                }
-                else {
-                    std::cout << "Marker " << markerNumber << ": Element at index " << index << " is already marked" << std::endl;
-                    std::cout << "Marker " << markerNumber << ": Signaling main thread about inability to continue" << std::endl;
-                    continueSignal.store(false);
-                    cv.notify_one();
-                    cv.wait(lock, [&] { return startSignal.load() || isTerminated; });
-
-                    if (isTerminated) {
-                        break;
-                    }
-                }
-            }
-
-            boost::unique_lock<boost::mutex> lock(arrayMutex);
-            cv.wait(lock, [&] { return continueSignal.load() || isTerminated; });
-
-            if (isTerminated) {
-                break;
-            }
-        }
-
-        std::cout << "Marker " << markerNumber << ": Thread ended" << std::endl;
-    }
-
-public:
-    bool getTerminationStatus() const {
-        return isTerminated;
-    }
+struct ThreadInfo {
+    int* arr;
+    int array_size;
+    int thread_index;
+    boost::condition_variable start_work;
+    boost::condition_variable stop_work;
+    bool end_thread;
+    boost::mutex mtx;
+    HANDLE* terminate_or_continue;
 };
 
-int main() {
-    int arraySize, numMarkerThreads;
-
-    std::cout << "Enter array size: ";
-    std::cin >> arraySize;
-
-    std::vector<int> array(arraySize, 0);
-    boost::mutex arrayMutex;
-    boost::condition_variable cv;
-    boost::atomic<bool> startSignal(false);
-    boost::atomic<bool> continueSignal(true);
-
-    std::cout << "Enter number of marker threads: ";
-    std::cin >> numMarkerThreads;
-
-    std::vector<MarkerThread> markerThreads;
-
-    for (int i = 0; i < numMarkerThreads; ++i) {
-        markerThreads.emplace_back(i + 1, array, arraySize, arrayMutex, cv, startSignal, continueSignal);
+void set_zeros(int* arr, int size, int thread_index) {
+    for (int i = 0; i < size; ++i) {
+        if (arr[i] == thread_index) { arr[i] = 0; }
     }
+}
 
-    for (auto& markerThread : markerThreads) {
-        markerThread.start();
-    }
-
-    startSignal.store(true);
-
-    while (true) {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
-
-        std::cout << "Array state: ";
-        for (int i = 0; i < arraySize; ++i) {
-            std::cout << array[i] << " ";
-        }
-        std::cout << std::endl;
-
-        int threadToTerminate;
-        while (true) {
-            std::cout << "Enter marker thread number to terminate (1 to " << numMarkerThreads << "): ";
-            std::cin >> threadToTerminate;
-            if (threadToTerminate >= 1 && threadToTerminate <= numMarkerThreads && !markerThreads[threadToTerminate - 1].getTerminationStatus()) {
-                break;
-            }
-            else {
-                std::cout << "Invalid thread number or thread already terminated. Please try again." << std::endl;
-            }
-        }
-
-        boost::unique_lock<boost::mutex> lock(arrayMutex);
-        continueSignal.store(true);
-        startSignal.store(true);
+void mark_element(ThreadInfo& info, int& number_of_marked_elements) {
+    int ind = rand() % info.array_size;
+    boost::unique_lock<boost::mutex> lock(info.mtx);
+    if (info.arr[ind] == 0) {
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
+        info.arr[ind] = info.thread_index;
         lock.unlock();
-        cv.notify_all();
-        markerThreads[threadToTerminate - 1].terminate();
-
-        bool allThreadsTerminated = std::all_of(markerThreads.begin(), markerThreads.end(),
-            [](const MarkerThread& markerThread) { return markerThread.getTerminationStatus(); });
-
-        if (allThreadsTerminated) {
-            break;
+        number_of_marked_elements++;
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
+    }
+    else {
+        std::cout << "\nThread " << info.thread_index << ", number of marked elements: " << number_of_marked_elements << ", can't mark element with index " << ind;
+        lock.unlock();
+        info.stop_work.notify_all();
+        int k = WaitForMultipleObjects(2, info.terminate_or_continue, FALSE, INFINITE) - WAIT_OBJECT_0;
+        if (k == 0) {
+            info.end_thread = true;
         }
     }
+}
+
+void thread_func(ThreadInfo& info) {
+    int number_of_marked_elements = 0;
+    srand(info.thread_index);
+
+    boost::unique_lock<boost::mutex> lock(info.mtx);
+    info.start_work.wait(lock);
+
+    while (!info.end_thread) {
+        mark_element(info, number_of_marked_elements);
+    }
+    set_zeros(info.arr, info.array_size, info.thread_index);
+}
+
+void display_array(const int* arr, int size) {
+    std::cout << "Array: ";
+    for (int i = 0; i < size; ++i) {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << "\n";
+}
+
+void terminate_thread(std::vector<bool>& terminated_threads, std::vector<ThreadInfo>& information, std::vector<boost::thread>& threads, int& ended_threads) {
+    bool is_thread_terminated = false;
+    while (!is_thread_terminated) {
+        int thread_to_terminate_ind;
+        std::cout << "Enter index of thread to be terminated (starts with 1): ";
+        std::cin >> thread_to_terminate_ind;
+        thread_to_terminate_ind--;
+
+        if (thread_to_terminate_ind >= information.size() || thread_to_terminate_ind < 0) {
+            std::cout << "No thread with such index\n";
+            continue;
+        }
+
+        if (terminated_threads[thread_to_terminate_ind]) {
+            std::cout << "Thread is already terminated\n";
+        }
+        else {
+            information[thread_to_terminate_ind].stop_work.notify_all();
+            threads[thread_to_terminate_ind].join();
+            display_array(information[thread_to_terminate_ind].arr, information[thread_to_terminate_ind].array_size);
+            terminated_threads[thread_to_terminate_ind] = true;
+            is_thread_terminated = true;
+            ended_threads++;
+        }
+    }
+
+    for (int j = 0; j < information.size(); ++j) {
+        if (!terminated_threads[j]) {
+            information[j].stop_work.notify_all();
+        }
+    }
+}
+
+void initialize_array(int* arr, int size) {
+    for (int i = 0; i < size; ++i) {
+        arr[i] = 0;
+    }
+}
+
+int main() {
+    int size;
+    std::cout << "Enter array size: ";
+    std::cin >> size;
+    int* arr = new int[size];
+    initialize_array(arr, size);
+
+    int number_of_threads;
+    std::cout << "Enter number of threads: ";
+    std::cin >> number_of_threads;
+
+    std::vector<boost::thread> threads(number_of_threads);
+    std::vector<ThreadInfo> information(number_of_threads);
+    std::vector<bool> terminated_threads(number_of_threads, false);
+
+    int ended_threads = 0;
+
+    for (int i = 0; i < number_of_threads; ++i) {
+        information[i].arr = arr;
+        information[i].array_size = size;
+        information[i].thread_index = i + 1;
+        information[i].terminate_or_continue = new HANDLE[2];
+        threads[i] = boost::thread(thread_func, boost::ref(information[i]));
+    }
+
+    for (int i = 0; i < number_of_threads; ++i) {
+        threads[i].detach();
+    }
+
+    std::cout << "All threads are terminated\n";
+
+    for (int i = 0; i < number_of_threads; ++i) {
+        delete[] information[i].terminate_or_continue;
+    }
+
+    delete[] arr;
 
     return 0;
 }
