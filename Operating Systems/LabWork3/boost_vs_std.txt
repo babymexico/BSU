@@ -1,0 +1,61 @@
+### Boost Implementation vs. Standard (Windows API)
+
+1. **Thread Management:**
+   - **Boost Implementation:**
+     - Utilizes `boost::thread` for thread management and synchronization.
+   - **Standard (Windows API):**
+     - Uses `CreateThread`, `WaitForMultipleObjects`, `SetEvent`, `WaitForSingleObject` for thread creation and synchronization.
+
+2. **Mutex and Critical Sections:**
+   - **Boost Implementation:**
+     - Employs `boost::mutex` for locking and unlocking critical sections.
+   - **Standard (Windows API):**
+     - Uses `CRITICAL_SECTION` and `EnterCriticalSection` for similar purposes.
+
+3. **Sleep and Wait Times:**
+   - **Boost Implementation:**
+     - Uses `boost::this_thread::sleep_for` for thread sleep/wait operations.
+   - **Standard (Windows API):**
+     - Uses `Sleep` for thread sleep and wait operations.
+
+4. **Conditional Variables and Event Handling:**
+   - **Boost Implementation:**
+     - Utilizes `boost::condition_variable` for conditional waiting and signaling.
+   - **Standard (Windows API):**
+     - Uses `CreateEvent`, `SetEvent`, `WaitForSingleObject` for event handling and signaling.
+
+5. **Dynamic Memory Management:**
+   - **Boost Implementation:**
+     - No manual memory management for thread info struct (avoiding memory leaks).
+   - **Standard (Windows API):**
+     - Requires explicit memory deallocation for `terminate_or_continue` using `delete[]`.
+
+6. **Console I/O:**
+   - **Boost Implementation:**
+     - Uses `std::cout` for console output.
+   - **Standard (Windows API):**
+     - Utilizes `std::cout` for console output as well.
+
+7. **Thread Termination:**
+   - **Boost Implementation:**
+     - Uses `boost::thread::detach()` for detaching threads.
+   - **Standard (Windows API):**
+     - Calls `CloseHandle` to terminate threads, ensuring proper resource management.
+
+8. **Library Dependency:**
+   - **Boost Implementation:**
+     - Relies on the Boost library for multi-threading functionalities.
+   - **Standard (Windows API):**
+     - Utilizes native Windows API functions directly, avoiding external library dependencies.
+
+9. **Cross-Platform Support:**
+   - **Boost Implementation:**
+     - Boost is a portable library, offering cross-platform support.
+   - **Standard (Windows API):**
+     - Windows API functions are specific to the Windows operating system and lack cross-platform compatibility.
+
+10. **Error Handling:**
+    - **Boost Implementation:**
+      - Boost might throw exceptions for errors (needs appropriate exception handling).
+    - **Standard (Windows API):**
+      - Error handling generally involves checking return values and error codes.
