@@ -27,15 +27,23 @@ At the initial stage, identify all arithmetic operations in the input file and r
 
 **Next Steps:**
 1. Add UI:
+
    a. Console-based.
+
    b. Utilize any Java graphical library of your choice.
+
    c. Compare CLI and UI-based implementations.
+
    d. Discuss with peers and compare different Java graphical libraries.
 
 2. Implement logic as a Web Service:
+
    a. REST, using any Java engine.
+
    b. SOAP, using any Java engine.
+
    c. Compare REST and SOAP implementations.
+
    d. Discuss with peers and compare different REST/Soap Java engines.
 
 3. Integrate UI and Web Service.
