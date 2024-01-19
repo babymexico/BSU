@@ -1,0 +1,69 @@
+/* styles.css */
+
+.root {
+    -fx-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* HBox */
+.hbox {
+    -fx-spacing: 20;
+}
+
+/* VBox for input and output */
+.input-vbox, .output-vbox, .output-vbox-mid {
+    -fx-padding: 20;
+    -fx-spacing: 10;
+    -fx-background-color: #ffffff;
+    -fx-border-radius: 8;
+    -fx-border-color: #b0bec5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
+}
+
+/* Labels */
+.header-label {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+    -fx-text-fill: #37474f;
+}
+
+.sub-label {
+    -fx-font-size: 14;
+    -fx-text-fill: #546e7a;
+}
+
+/* Radio Buttons */
+.radio-button {
+    -fx-font-size: 12;
+    -fx-text-fill: #37474f;
+}
+
+/* Text Field */
+.text-field {
+    -fx-font-size: 14;
+}
+
+/* Button */
+.process-button {
+    -fx-font-size: 16;
+    -fx-padding: 10;
+    -fx-background-color: #03a9f4;
+    -fx-text-fill: #ffffff;
+    -fx-border-radius: 5;
+}
+
+.process-button:hover {
+    -fx-background-color: #0288d1;
+}
+
+/* Set specific styles for different sections */
+.input-vbox {
+    -fx-background-color: #b2dfdb;
+}
+
+.output-vbox {
+    -fx-background-color: #b2dfdb;
+}
+
+.output-vbox-mid {
+    -fx-background-color: #ffe0b2;
+}
